@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GBBO Draft Randomizer (2025 – After Episode 1)</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.4; max-width: 780px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+  .sub { color: #555; margin-top: 0; }
+  .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  button { cursor: pointer; border: 1px solid #aaa; background: #f8f8f8; border-radius: 8px; padding: .6rem .9rem; font-weight: 600; }
+  button:hover { background: #f1f1f1; }
+  .pill { display: inline-block; padding: .4rem .7rem; border-radius: 999px; border: 1px solid #ddd; }
+  .result { font-size: 1.1rem; font-weight: 700; }
+  .small { font-size: .9rem; color: #666; }
+  .muted { color: #666; }
+  .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .5rem; }
+  .footer { margin-top: 2rem; font-size: .85rem; color: #666; }
+  input[type="checkbox"] { transform: scale(1.2); margin-right: .4rem; }
+  label { display: flex; align-items: center; gap: .25rem; }
+</style>
+</head>
+<body>
+  <h1>GBBO Draft Randomizer</h1>
+  <p class="sub">2025 Season • Remaining after Episode 1</p>
+
+  <div class="card">
+    <p class="muted"><strong>How it works:</strong> Click “Draw 3” to randomly pick three unique bakers from the list below (excluding anyone you manually uncheck). Use “Lock” to fix a baker so they always appear in the next draw.</p>
+  </div>
+
+  <div class="card">
+    <h3>Contestants in the draw</h3>
+    <p class="small">Uncheck anyone you don’t want included.</p>
+    <div id="list" class="list"></div>
+    <p class="small muted">Note: This list reflects bakers remaining after Episode 1 (Hassan and Leighton eliminated).</p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="draw">🎲 Draw 3</button>
+      <button id="clearLocks">🔓 Clear Locks</button>
+      <button id="copy">📋 Copy Results</button>
+    </div>
+    <p class="small muted">Tip: You can “lock” a baker with the padlock next to their name to keep them in future draws.</p>
+    <div id="results" class="result"></div>
+  </div>
+
+  <div class="footer">
+    <p class="small">Made for friendly GBBO drafts. Update the list easily by clicking “Edit list” below.</p>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary><strong>⚙️ Edit list</strong> (add/remove names)</summary>
+      <p class="small muted">One name per line:</p>
+      <textarea id="edit" rows="8" style="width:100%;"></textarea>
+      <div class="row" style="margin-top:.5rem;">
+        <button id="apply">Apply Changes</button>
+        <button id="reset">Reset to Default</button>
+      </div>
+    </details>
+  </div>
+
+<script>
+// Default list: remaining bakers after Episode 1 (2025), minus Hassan & Leighton
+const defaultBakers = [
+  "Aaron",
+  "Iain",
+  "Jasmine",
+  "Jessika",
+  "Lesley",
+  "Nadia",
+  "Nataliia",
+  "Pui Man",
+  "Toby",
+  "Tom"
+];
+
+let bakers = [...defaultBakers];
+let locks = new Set();
+let lastDraw = [];
+
+const listEl = document.getElementById('list');
+const resultsEl = document.getElementById('results');
+const editEl = document.getElementById('edit');
+
+function renderList() {
+  listEl.innerHTML = "";
+  bakers.forEach((name, idx) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const label = document.createElement('label');
+    label.className = 'pill';
+    label.style.justifyContent = 'space-between';
+    label.style.gap = '0.6rem';
+    label.style.paddingRight = '0.6rem';
+
+    const left = document.createElement('span');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.dataset.name = name;
+
+    const txt = document.createElement('span');
+    txt.textContent = name;
+
+    const lockBtn = document.createElement('button');
+    lockBtn.type = 'button';
+    lockBtn.textContent = locks.has(name) ? "🔒" : "🔓";
+    lockBtn.style.border = "none";
+    lockBtn.style.background = "transparent";
+    lockBtn.style.padding = "0 .2rem";
+    lockBtn.style.fontSize = "1.1rem";
+
+    lockBtn.addEventListener('click', () => {
+      if (locks.has(name)) locks.delete(name); else locks.add(name);
+      lockBtn.textContent = locks.has(name) ? "🔒" : "🔓";
+    });
+
+    left.appendChild(cb);
+    left.appendChild(txt);
+
+    label.appendChild(left);
+    label.appendChild(lockBtn);
+    listEl.appendChild(label);
+  });
+}
+
+function currentPool() {
+  const checks = listEl.querySelectorAll('input[type="checkbox"]');
+  const pool = [];
+  checks.forEach(cb => { if (cb.checked) pool.push(cb.dataset.name); });
+  return pool;
+}
+
+function drawThree() {
+  const pool = currentPool();
+  const pickCount = Math.min(3, pool.length);
+  let picks = [];
+
+  // Start with locked picks (if included in pool)
+  locks.forEach(name => {
+    if (picks.length < pickCount && pool.includes(name) && !picks.includes(name)) {
+      picks.push(name);
+    }
+  });
+
+  // Fill remaining at random
+  const remaining = pool.filter(n => !picks.includes(n));
+  for (let i = remaining.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+  }
+  while (picks.length < pickCount && remaining.length) {
+    picks.push(remaining.pop());
+  }
+
+  lastDraw = picks;
+  resultsEl.textContent = picks.join(' · ');
+}
+
+document.getElementById('draw').addEventListener('click', drawThree);
+document.getElementById('clearLocks').addEventListener('click', () => {
+  locks.clear();
+  renderList();
+});
+document.getElementById('copy').addEventListener('click', async () => {
+  if (!lastDraw.length) return;
+  try {
+    await navigator.clipboard.writeText(lastDraw.join(', '));
+    alert('Copied: ' + lastDraw.join(', '));
+  } catch(e) {
+    alert('Copy failed. You can manually copy: ' + lastDraw.join(', '));
+  }
+});
+
+// Edit panel
+function syncEditor() {
+  editEl.value = bakers.join("\n");
+}
+document.getElementById('apply').addEventListener('click', () => {
+  const lines = editEl.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (lines.length) {
+    bakers = Array.from(new Set(lines));
+    locks.clear();
+    renderList();
+  }
+});
+document.getElementById('reset').addEventListener('click', () => {
+  bakers = [...defaultBakers];
+  locks.clear();
+  syncEditor();
+  renderList();
+});
+
+renderList();
+syncEditor();
+</script>
+</body>
+</html>
