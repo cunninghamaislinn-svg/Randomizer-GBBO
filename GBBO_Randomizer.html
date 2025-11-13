@@ -1,202 +1,1059 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GBBO Draft Randomizer (2025 – After Episode 1)</title>
-<style>
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.4; max-width: 780px; margin: 2rem auto; padding: 0 1rem; }
-  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
-  .sub { color: #555; margin-top: 0; }
-  .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
-  .row { display: flex; gap: .5rem; flex-wrap: wrap; }
-  button { cursor: pointer; border: 1px solid #aaa; background: #f8f8f8; border-radius: 8px; padding: .6rem .9rem; font-weight: 600; }
-  button:hover { background: #f1f1f1; }
-  .pill { display: inline-block; padding: .4rem .7rem; border-radius: 999px; border: 1px solid #ddd; }
-  .result { font-size: 1.1rem; font-weight: 700; }
-  .small { font-size: .9rem; color: #666; }
-  .muted { color: #666; }
-  .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .5rem; }
-  .footer { margin-top: 2rem; font-size: .85rem; color: #666; }
-  input[type="checkbox"] { transform: scale(1.2); margin-right: .4rem; }
-  label { display: flex; align-items: center; gap: .25rem; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reality Competition Draft HQ</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --border: #dcdce6;
+      --text: #1f2430;
+      --muted: #5e6472;
+      --accent: #4c6ef5;
+      --accent-dark: #3b5bdb;
+      --danger: #f03e3e;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      margin: 0 auto;
+      padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 4rem;
+      max-width: 1100px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 0.4rem 0;
+      font-weight: 700;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    section {
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 12px 30px rgba(31, 36, 48, 0.08);
+    }
+
+    section h2 {
+      font-size: 1.35rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem 1.5rem;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.6rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font: inherit;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-dark);
+      box-shadow: 0 8px 16px rgba(76, 110, 245, 0.24);
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      box-shadow: none;
+    }
+
+    button.secondary:hover {
+      background: rgba(76, 110, 245, 0.1);
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .stack {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0 0;
+    }
+
+    .chip {
+      background: rgba(76, 110, 245, 0.12);
+      border-radius: 999px;
+      padding: 0.35rem 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .chip button {
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      border: none;
+      box-shadow: none;
+    }
+
+    .chip button:hover {
+      background: rgba(0, 0, 0, 0.08);
+      transform: none;
+      box-shadow: none;
+      color: var(--danger);
+    }
+
+    .contestant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .contestant-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.7rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+    }
+
+    .contestant-card.taken {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .contestant-card span {
+      font-weight: 600;
+    }
+
+    .draft-status {
+      background: rgba(76, 110, 245, 0.12);
+      color: var(--accent-dark);
+      border-radius: 12px;
+      padding: 0.6rem 0.8rem;
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .team-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .team-card h3 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.05rem;
+    }
+
+    .team-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .team-card li {
+      background: rgba(76, 110, 245, 0.08);
+      border-radius: 10px;
+      padding: 0.4rem 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+
+    table th, table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .trade-log {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .trade-log-entry {
+      background: rgba(76, 110, 245, 0.1);
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .share-box {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .stack {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>GBBO Draft Randomizer</h1>
-  <p class="sub">2025 Season • Remaining after Episode 1</p>
+  <header>
+    <h1>Reality Competition Draft HQ</h1>
+    <p>Create and run fantasy-style drafts for <strong>Survivor</strong>, <strong>The Traitors</strong>, <strong>Great British Bake Off</strong>, and custom shows. Customize scoring, invite friends with a shareable link, track trades, and manage prize pools all season long.</p>
+  </header>
 
-  <div class="card">
-    <p class="muted"><strong>How it works:</strong> Click “Draw 3” to randomly pick three unique bakers from the list below (excluding anyone you manually uncheck). Use “Lock” to fix a baker so they always appear in the next draw.</p>
-  </div>
-
-  <div class="card">
-    <h3>Contestants in the draw</h3>
-    <p class="small">Uncheck anyone you don’t want included.</p>
-    <div id="list" class="list"></div>
-    <p class="small muted">Note: This list reflects bakers remaining after Episode 1 (Hassan and Leighton eliminated).</p>
-  </div>
-
-  <div class="card">
-    <div class="row">
-      <button id="draw">🎲 Draw 3</button>
-      <button id="clearLocks">🔓 Clear Locks</button>
-      <button id="copy">📋 Copy Results</button>
-    </div>
-    <p class="small muted">Tip: You can “lock” a baker with the padlock next to their name to keep them in future draws.</p>
-    <div id="results" class="result"></div>
-  </div>
-
-  <div class="footer">
-    <p class="small">Made for friendly GBBO drafts. Update the list easily by clicking “Edit list” below.</p>
-  </div>
-
-  <div class="card">
-    <details>
-      <summary><strong>⚙️ Edit list</strong> (add/remove names)</summary>
-      <p class="small muted">One name per line:</p>
-      <textarea id="edit" rows="8" style="width:100%;"></textarea>
-      <div class="row" style="margin-top:.5rem;">
-        <button id="apply">Apply Changes</button>
-        <button id="reset">Reset to Default</button>
+  <section id="setup">
+    <h2>1. Configure your draft</h2>
+    <div class="grid two">
+      <div>
+        <label for="showSelect">Competition</label>
+        <select id="showSelect"></select>
+        <p class="muted" id="showNote"></p>
       </div>
-    </details>
-  </div>
+      <div>
+        <label for="snakeToggle">Draft mode</label>
+        <div class="stack">
+          <button id="snakeToggle" class="secondary" type="button">Snake Draft: On</button>
+          <span class="muted">Toggle between snake and standard draft order anytime.</span>
+        </div>
+      </div>
+    </div>
 
-<script>
-// Default list: remaining bakers after Episode 1 (2025), minus Hassan & Leighton
-const defaultBakers = [
-  "Aaron",
-  "Iain",
-  "Jasmine",
-  "Jessika",
-  "Lesley",
-  "Nadia",
-  "Nataliia",
-  "Pui Man",
-  "Toby",
-  "Tom"
-];
+    <div class="grid two" style="margin-top:1.2rem; align-items: flex-start;">
+      <div>
+        <label for="contestantEditor">Contestant pool</label>
+        <textarea id="contestantEditor" placeholder="One contestant per line"></textarea>
+        <div class="stack">
+          <button id="applyContestants" type="button">Update list</button>
+          <button id="resetContestants" class="secondary" type="button">Reset to show default</button>
+        </div>
+      </div>
+      <div>
+        <label for="playerName">Draft managers</label>
+        <div class="stack">
+          <input id="playerName" type="text" placeholder="Add manager name" />
+          <button id="addPlayer" type="button">Add</button>
+        </div>
+        <div class="chips" id="playerList"></div>
+        <p class="muted">Tip: Add everyone joining the draft, then randomize the order below.</p>
+        <div class="stack" style="margin-top:0.8rem;">
+          <button id="randomizeOrder" type="button">🎲 Randomize draft order</button>
+          <button id="resetDraft" class="secondary" type="button">Reset draft</button>
+        </div>
+        <p class="muted" id="draftOrderPreview"></p>
+      </div>
+    </div>
+  </section>
 
-let bakers = [...defaultBakers];
-let locks = new Set();
-let lastDraw = [];
+  <section id="scoring">
+    <h2>2. Customize scoring</h2>
+    <p class="muted">Set up the ways players can earn points. Edit the table below or add new rows to tailor your league.</p>
+    <div class="stack">
+      <button id="addScoringRow" type="button">Add scoring rule</button>
+      <button id="resetScoring" class="secondary" type="button">Reset defaults</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60%">Event</th>
+          <th style="width:20%">Points</th>
+          <th style="width:20%">Remove</th>
+        </tr>
+      </thead>
+      <tbody id="scoringTable"></tbody>
+    </table>
+  </section>
 
-const listEl = document.getElementById('list');
-const resultsEl = document.getElementById('results');
-const editEl = document.getElementById('edit');
+  <section id="draftBoard">
+    <h2>3. Run your draft</h2>
+    <div class="stack">
+      <button id="startDraft" type="button">Start / Resume Draft</button>
+      <span class="draft-status" id="draftStatus">Waiting for setup…</span>
+    </div>
+    <div class="muted" style="margin-top:0.5rem;">Click a contestant card to assign them to the active manager.</div>
+    <div class="contestant-grid" id="contestantGrid"></div>
+    <div class="teams" id="teamGrid"></div>
+  </section>
 
-function renderList() {
-  listEl.innerHTML = "";
-  bakers.forEach((name, idx) => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    const label = document.createElement('label');
-    label.className = 'pill';
-    label.style.justifyContent = 'space-between';
-    label.style.gap = '0.6rem';
-    label.style.paddingRight = '0.6rem';
+  <section id="trades">
+    <h2>4. Trade center</h2>
+    <p class="muted">Record trades during the season. Selecting both sides will instantly swap the contestants and log the trade.</p>
+    <div class="grid three">
+      <div>
+        <label for="tradeTeamA">Team A</label>
+        <select id="tradeTeamA"></select>
+      </div>
+      <div>
+        <label for="tradeMemberA">Send</label>
+        <select id="tradeMemberA"></select>
+      </div>
+      <div>
+        <label for="tradeTeamB">Team B</label>
+        <select id="tradeTeamB"></select>
+      </div>
+      <div>
+        <label for="tradeMemberB">Receive</label>
+        <select id="tradeMemberB"></select>
+      </div>
+    </div>
+    <div class="stack" style="margin-top:0.8rem;">
+      <button id="executeTrade" type="button">Record trade</button>
+      <button id="clearTrades" class="secondary" type="button">Clear log</button>
+    </div>
+    <div class="trade-log" id="tradeLog"></div>
+  </section>
 
-    const left = document.createElement('span');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = true;
-    cb.dataset.name = name;
+  <section id="pool">
+    <h2>5. Prize pool</h2>
+    <div class="grid two">
+      <div>
+        <label for="entryFee">Entry fee (per manager)</label>
+        <input id="entryFee" type="number" min="0" step="1" value="0" />
+      </div>
+      <div>
+        <label for="customPot">Manual pot adjustment</label>
+        <input id="customPot" type="number" min="0" step="1" value="0" />
+      </div>
+    </div>
+    <p class="muted">Total prize pool updates automatically when managers join or fees change.</p>
+    <div class="draft-status" id="potTotal">Total pot: $0</div>
+  </section>
 
-    const txt = document.createElement('span');
-    txt.textContent = name;
+  <section id="share">
+    <h2>6. Share &amp; save</h2>
+    <p class="muted">Generate a link that encodes your current draft state. Send it to league members so everyone stays in sync.</p>
+    <div class="stack">
+      <button id="generateLink" type="button">Generate share link</button>
+      <button id="copyLink" class="secondary" type="button">Copy link</button>
+    </div>
+    <div class="share-box">
+      <input id="shareLink" type="text" readonly placeholder="Generate a link to share your draft" />
+      <small class="muted">Links contain serialized data in the URL. Sensitive information such as pot amounts are included, so share with trusted players only.</small>
+    </div>
+  </section>
 
-    const lockBtn = document.createElement('button');
-    lockBtn.type = 'button';
-    lockBtn.textContent = locks.has(name) ? "🔒" : "🔓";
-    lockBtn.style.border = "none";
-    lockBtn.style.background = "transparent";
-    lockBtn.style.padding = "0 .2rem";
-    lockBtn.style.fontSize = "1.1rem";
+  <footer class="muted">
+    <p>Reality Competition Draft HQ keeps everything client-side—no servers, logins, or tracking. Bookmark your link to return anytime.</p>
+  </footer>
 
-    lockBtn.addEventListener('click', () => {
-      if (locks.has(name)) locks.delete(name); else locks.add(name);
-      lockBtn.textContent = locks.has(name) ? "🔒" : "🔓";
+  <script>
+    const shows = {
+      survivor: {
+        name: "Survivor",
+        note: "Drop in castaways from the current season and start drafting for immunity wins, idols, and blindsides.",
+        contestants: [
+          "Charlie",
+          "Dee",
+          "Emily",
+          "Jake",
+          "Julie",
+          "Kaleb",
+          "Kendra",
+          "Katurah",
+          "Kellie",
+          "Sabiyah",
+          "Bruce",
+          "Brando",
+          "Drew",
+          "Austin"
+        ],
+        scoring: [
+          { event: "Individual immunity win", points: 10 },
+          { event: "Hidden idol found", points: 8 },
+          { event: "Tribal council survived", points: 3 },
+          { event: "Confessional spotlight", points: 2 },
+          { event: "Wins the season", points: 25 }
+        ]
+      },
+      traitors: {
+        name: "The Traitors",
+        note: "Perfect for plotting shield pickups, successful murders, and faithful banishments.",
+        contestants: [
+          "Arie",
+          "Cirie",
+          "Kate",
+          "Christian",
+          "Rachel",
+          "Stephenie",
+          "Quentin",
+          "Andie",
+          "Michael",
+          "Shelbe",
+          "Kyle",
+          "Amanda",
+          "Azra",
+          "Cody"
+        ],
+        scoring: [
+          { event: "Shield secured", points: 6 },
+          { event: "Successful murder", points: 8 },
+          { event: "Faithful votes out traitor", points: 12 },
+          { event: "Episode appearance", points: 1 },
+          { event: "Wins the prize", points: 20 }
+        ]
+      },
+      gbbo: {
+        name: "Great British Bake Off",
+        note: "Track Star Bakers, Technical wins, and showstopping disasters week after week.",
+        contestants: [
+          "Abbi",
+          "Amos",
+          "Cristy",
+          "Dan",
+          "Dana",
+          "Josh",
+          "Keith",
+          "Matty",
+          "Nicky",
+          "Rowan",
+          "Saku",
+          "Tasha"
+        ],
+        scoring: [
+          { event: "Star Baker", points: 8 },
+          { event: "Technical bake top 3", points: 5 },
+          { event: "Hollywood handshake", points: 6 },
+          { event: "Showstopper praise", points: 3 },
+          { event: "Eliminated", points: -5 },
+          { event: "Wins the series", points: 15 }
+        ]
+      }
+    };
+
+    const state = {
+      show: "gbbo",
+      contestants: [...shows.gbbo.contestants],
+      players: [],
+      draftOrder: [],
+      rosters: {},
+      currentPick: 0,
+      snake: true,
+      scoring: shows.gbbo.scoring.map(rule => ({ ...rule })),
+      trades: [],
+      pool: { entryFee: 0, manualPot: 0 }
+    };
+
+    const showSelect = document.getElementById("showSelect");
+    const showNote = document.getElementById("showNote");
+    const contestantEditor = document.getElementById("contestantEditor");
+    const applyContestants = document.getElementById("applyContestants");
+    const resetContestants = document.getElementById("resetContestants");
+    const playerName = document.getElementById("playerName");
+    const addPlayerBtn = document.getElementById("addPlayer");
+    const playerList = document.getElementById("playerList");
+    const randomizeOrderBtn = document.getElementById("randomizeOrder");
+    const resetDraftBtn = document.getElementById("resetDraft");
+    const draftOrderPreview = document.getElementById("draftOrderPreview");
+    const scoringTable = document.getElementById("scoringTable");
+    const addScoringRowBtn = document.getElementById("addScoringRow");
+    const resetScoringBtn = document.getElementById("resetScoring");
+    const startDraftBtn = document.getElementById("startDraft");
+    const draftStatus = document.getElementById("draftStatus");
+    const contestantGrid = document.getElementById("contestantGrid");
+    const teamGrid = document.getElementById("teamGrid");
+    const snakeToggle = document.getElementById("snakeToggle");
+    const tradeTeamA = document.getElementById("tradeTeamA");
+    const tradeMemberA = document.getElementById("tradeMemberA");
+    const tradeTeamB = document.getElementById("tradeTeamB");
+    const tradeMemberB = document.getElementById("tradeMemberB");
+    const executeTradeBtn = document.getElementById("executeTrade");
+    const clearTradesBtn = document.getElementById("clearTrades");
+    const tradeLog = document.getElementById("tradeLog");
+    const entryFeeInput = document.getElementById("entryFee");
+    const customPotInput = document.getElementById("customPot");
+    const potTotal = document.getElementById("potTotal");
+    const generateLinkBtn = document.getElementById("generateLink");
+    const copyLinkBtn = document.getElementById("copyLink");
+    const shareLink = document.getElementById("shareLink");
+
+    function populateShows() {
+      Object.entries(shows).forEach(([key, data]) => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = data.name;
+        showSelect.appendChild(option);
+      });
+      showSelect.value = state.show;
+      updateShowInfo();
+    }
+
+    function updateShowInfo() {
+      const showData = shows[state.show];
+      showNote.textContent = showData.note;
+      contestantEditor.value = state.contestants.join("\n");
+    }
+
+    function renderPlayers() {
+      playerList.innerHTML = "";
+      state.players.forEach(name => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = name;
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.textContent = "×";
+        removeBtn.addEventListener("click", () => {
+          removePlayer(name);
+        });
+        chip.appendChild(removeBtn);
+        playerList.appendChild(chip);
+      });
+      updateDraftPreview();
+      updateTradeSelectors();
+      updatePot();
+      renderTeams();
+    }
+
+    function updateDraftPreview() {
+      if (!state.players.length) {
+        draftOrderPreview.textContent = "";
+        return;
+      }
+      const order = state.draftOrder.length ? state.draftOrder : state.players;
+      draftOrderPreview.textContent = `Draft order: ${order.join(" → ")}`;
+    }
+
+    function addPlayer(name) {
+      const trimmed = name.trim();
+      if (!trimmed || state.players.includes(trimmed)) return;
+      state.players.push(trimmed);
+      state.draftOrder = [...state.players];
+      state.rosters[trimmed] = state.rosters[trimmed] || [];
+      renderPlayers();
+    }
+
+    function removePlayer(name) {
+      state.players = state.players.filter(p => p !== name);
+      delete state.rosters[name];
+      state.draftOrder = state.draftOrder.filter(p => p !== name);
+      renderPlayers();
+    }
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function randomizeOrder() {
+      state.draftOrder = shuffle(state.players);
+      state.currentPick = 0;
+      updateDraftPreview();
+      renderDraftStatus();
+    }
+
+    function resetDraft() {
+      state.rosters = {};
+      state.players.forEach(p => {
+        state.rosters[p] = [];
+      });
+      state.currentPick = 0;
+      state.trades = [];
+      tradeLog.innerHTML = "";
+      state.draftOrder = [...state.players];
+      renderTeams();
+      renderContestants();
+      renderDraftStatus();
+      updateDraftPreview();
+      updateTradeSelectors();
+    }
+
+    function renderScoring() {
+      scoringTable.innerHTML = "";
+      state.scoring.forEach((rule, index) => {
+        const row = document.createElement("tr");
+        const eventCell = document.createElement("td");
+        const pointsCell = document.createElement("td");
+        const removeCell = document.createElement("td");
+
+        const eventInput = document.createElement("input");
+        eventInput.type = "text";
+        eventInput.value = rule.event;
+        eventInput.addEventListener("input", () => {
+          state.scoring[index].event = eventInput.value;
+        });
+
+        const pointsInput = document.createElement("input");
+        pointsInput.type = "number";
+        pointsInput.value = rule.points;
+        pointsInput.addEventListener("input", () => {
+          state.scoring[index].points = Number(pointsInput.value);
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.textContent = "Remove";
+        removeBtn.className = "secondary";
+        removeBtn.addEventListener("click", () => {
+          state.scoring.splice(index, 1);
+          renderScoring();
+        });
+
+        eventCell.appendChild(eventInput);
+        pointsCell.appendChild(pointsInput);
+        removeCell.appendChild(removeBtn);
+        row.appendChild(eventCell);
+        row.appendChild(pointsCell);
+        row.appendChild(removeCell);
+        scoringTable.appendChild(row);
+      });
+    }
+
+    function addScoringRule() {
+      state.scoring.push({ event: "Custom event", points: 0 });
+      renderScoring();
+    }
+
+    function resetScoring() {
+      const showData = shows[state.show];
+      state.scoring = showData.scoring.map(rule => ({ ...rule }));
+      renderScoring();
+    }
+
+    function activeTeam() {
+      if (!state.players.length) return null;
+      if (!state.draftOrder.length) state.draftOrder = [...state.players];
+      const picksPerRound = state.draftOrder.length;
+      const round = Math.floor(state.currentPick / picksPerRound);
+      let index = state.currentPick % picksPerRound;
+      if (state.snake && round % 2 === 1) {
+        index = picksPerRound - 1 - index;
+      }
+      return state.draftOrder[index];
+    }
+
+    function renderDraftStatus() {
+      if (!state.players.length) {
+        draftStatus.textContent = "Add managers to begin.";
+        return;
+      }
+      const current = activeTeam();
+      if (!current) {
+        draftStatus.textContent = "Waiting for setup…";
+        return;
+      }
+      const remaining = state.contestants.filter(name => !isTaken(name));
+      if (!remaining.length) {
+        draftStatus.textContent = "Draft complete!";
+        return;
+      }
+      draftStatus.textContent = `${current} is on the clock (Pick #${state.currentPick + 1})`;
+    }
+
+    function isTaken(name) {
+      return Object.values(state.rosters).some(team => team.includes(name));
+    }
+
+    function renderContestants() {
+      contestantGrid.innerHTML = "";
+      state.contestants.forEach(name => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "contestant-card";
+        if (isTaken(name)) {
+          card.classList.add("taken");
+        }
+        const label = document.createElement("span");
+        label.textContent = name;
+        card.appendChild(label);
+        const status = document.createElement("small");
+        status.className = "muted";
+        status.textContent = isTaken(name) ? "Drafted" : "Available";
+        card.appendChild(status);
+        card.addEventListener("click", () => pickContestant(name));
+        contestantGrid.appendChild(card);
+      });
+    }
+
+    function ensureRosters() {
+      state.players.forEach(p => {
+        if (!state.rosters[p]) state.rosters[p] = [];
+      });
+    }
+
+    function renderTeams() {
+      ensureRosters();
+      teamGrid.innerHTML = "";
+      state.players.forEach(player => {
+        const card = document.createElement("div");
+        card.className = "team-card";
+        const title = document.createElement("h3");
+        title.textContent = player;
+        const count = document.createElement("span");
+        count.className = "muted";
+        count.textContent = `${state.rosters[player]?.length || 0} picks`;
+        title.appendChild(count);
+        card.appendChild(title);
+        const list = document.createElement("ul");
+        (state.rosters[player] || []).forEach(name => {
+          const item = document.createElement("li");
+          item.textContent = name;
+          list.appendChild(item);
+        });
+        card.appendChild(list);
+        teamGrid.appendChild(card);
+      });
+    }
+
+    function pickContestant(name) {
+      const team = activeTeam();
+      if (!team || isTaken(name)) return;
+      ensureRosters();
+      state.rosters[team].push(name);
+      state.currentPick += 1;
+      renderContestants();
+      renderTeams();
+      renderDraftStatus();
+    }
+
+    function updateTradeSelectors() {
+      const selects = [tradeTeamA, tradeTeamB];
+      selects.forEach(select => {
+        select.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select team";
+        select.appendChild(placeholder);
+        state.players.forEach(player => {
+          const option = document.createElement("option");
+          option.value = player;
+          option.textContent = player;
+          select.appendChild(option);
+        });
+      });
+      updateTradeMembers(tradeTeamA, tradeMemberA);
+      updateTradeMembers(tradeTeamB, tradeMemberB);
+    }
+
+    function updateTradeMembers(teamSelect, memberSelect) {
+      memberSelect.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select contestant";
+      memberSelect.appendChild(placeholder);
+      const team = teamSelect.value;
+      if (team && state.rosters[team]) {
+        state.rosters[team].forEach(contestant => {
+          const option = document.createElement("option");
+          option.value = contestant;
+          option.textContent = contestant;
+          memberSelect.appendChild(option);
+        });
+      }
+    }
+
+    function logTrade(teamA, memberA, teamB, memberB) {
+      const entry = document.createElement("div");
+      entry.className = "trade-log-entry";
+      const time = new Date().toLocaleString();
+      entry.textContent = `${time}: ${teamA} traded ${memberA} ↔ ${teamB} traded ${memberB}`;
+      tradeLog.prepend(entry);
+    }
+
+    function executeTrade() {
+      const teamA = tradeTeamA.value;
+      const teamB = tradeTeamB.value;
+      const memberA = tradeMemberA.value;
+      const memberB = tradeMemberB.value;
+      if (!teamA || !teamB || !memberA || !memberB || teamA === teamB) return;
+      const rosterA = state.rosters[teamA];
+      const rosterB = state.rosters[teamB];
+      const indexA = rosterA.indexOf(memberA);
+      const indexB = rosterB.indexOf(memberB);
+      if (indexA === -1 || indexB === -1) return;
+      rosterA[indexA] = memberB;
+      rosterB[indexB] = memberA;
+      state.trades.unshift({
+        time: new Date().toISOString(),
+        teamA,
+        memberA,
+        teamB,
+        memberB
+      });
+      logTrade(teamA, memberA, teamB, memberB);
+      renderTeams();
+      renderContestants();
+      updateTradeSelectors();
+    }
+
+    function clearTrades() {
+      state.trades = [];
+      tradeLog.innerHTML = "";
+    }
+
+    function updatePot() {
+      const managers = state.players.length;
+      const entryFee = Number(state.pool.entryFee) || 0;
+      const manual = Number(state.pool.manualPot) || 0;
+      const total = managers * entryFee + manual;
+      potTotal.textContent = `Total pot: $${total.toLocaleString()}`;
+    }
+
+    function generateShareLink() {
+      const payload = {
+        state: {
+          show: state.show,
+          contestants: state.contestants,
+          players: state.players,
+          draftOrder: state.draftOrder,
+          rosters: state.rosters,
+          currentPick: state.currentPick,
+          snake: state.snake,
+          scoring: state.scoring,
+          trades: state.trades,
+          pool: state.pool
+        }
+      };
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const url = `${window.location.origin}${window.location.pathname}?state=${encoded}`;
+      shareLink.value = url;
+      return url;
+    }
+
+    async function copyShareLink() {
+      const value = shareLink.value;
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        copyLinkBtn.textContent = "Copied!";
+        setTimeout(() => (copyLinkBtn.textContent = "Copy link"), 1500);
+      } catch (err) {
+        alert("Copy failed. Manually copy the link from the input field.");
+      }
+    }
+
+    function loadFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("state");
+      if (!encoded) return;
+      try {
+        const decoded = decodeURIComponent(escape(atob(encoded)));
+        const payload = JSON.parse(decoded);
+        if (payload && payload.state) {
+          Object.assign(state, payload.state);
+          state.scoring = state.scoring.map(rule => ({ ...rule }));
+          renderAll();
+        }
+      } catch (err) {
+        console.error("Failed to load state from URL", err);
+      }
+    }
+
+    function renderAll() {
+      showSelect.value = state.show;
+      updateShowInfo();
+      renderPlayers();
+      renderScoring();
+      renderContestants();
+      renderTeams();
+      renderDraftStatus();
+      entryFeeInput.value = state.pool.entryFee;
+      customPotInput.value = state.pool.manualPot;
+      updatePot();
+      shareLink.value = "";
+    }
+
+    showSelect.addEventListener("change", () => {
+      state.show = showSelect.value;
+      const showData = shows[state.show];
+      state.contestants = [...showData.contestants];
+      state.scoring = showData.scoring.map(rule => ({ ...rule }));
+      contestantEditor.value = state.contestants.join("\n");
+      renderScoring();
+      renderContestants();
+      renderDraftStatus();
     });
 
-    left.appendChild(cb);
-    left.appendChild(txt);
+    snakeToggle.addEventListener("click", () => {
+      state.snake = !state.snake;
+      snakeToggle.textContent = `Snake Draft: ${state.snake ? "On" : "Off"}`;
+      renderDraftStatus();
+    });
 
-    label.appendChild(left);
-    label.appendChild(lockBtn);
-    listEl.appendChild(label);
-  });
-}
+    applyContestants.addEventListener("click", () => {
+      const list = contestantEditor.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+      if (list.length) {
+        state.contestants = Array.from(new Set(list));
+        renderContestants();
+        renderDraftStatus();
+      }
+    });
 
-function currentPool() {
-  const checks = listEl.querySelectorAll('input[type="checkbox"]');
-  const pool = [];
-  checks.forEach(cb => { if (cb.checked) pool.push(cb.dataset.name); });
-  return pool;
-}
+    resetContestants.addEventListener("click", () => {
+      const showData = shows[state.show];
+      state.contestants = [...showData.contestants];
+      contestantEditor.value = state.contestants.join("\n");
+      renderContestants();
+      renderDraftStatus();
+    });
 
-function drawThree() {
-  const pool = currentPool();
-  const pickCount = Math.min(3, pool.length);
-  let picks = [];
+    addPlayerBtn.addEventListener("click", () => {
+      addPlayer(playerName.value);
+      playerName.value = "";
+      playerName.focus();
+    });
 
-  // Start with locked picks (if included in pool)
-  locks.forEach(name => {
-    if (picks.length < pickCount && pool.includes(name) && !picks.includes(name)) {
-      picks.push(name);
-    }
-  });
+    playerName.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addPlayer(playerName.value);
+        playerName.value = "";
+      }
+    });
 
-  // Fill remaining at random
-  const remaining = pool.filter(n => !picks.includes(n));
-  for (let i = remaining.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
-  }
-  while (picks.length < pickCount && remaining.length) {
-    picks.push(remaining.pop());
-  }
+    randomizeOrderBtn.addEventListener("click", randomizeOrder);
+    resetDraftBtn.addEventListener("click", resetDraft);
+    addScoringRowBtn.addEventListener("click", addScoringRule);
+    resetScoringBtn.addEventListener("click", resetScoring);
 
-  lastDraw = picks;
-  resultsEl.textContent = picks.join(' · ');
-}
+    startDraftBtn.addEventListener("click", () => {
+      if (!state.players.length) {
+        alert("Add at least one manager before starting the draft.");
+        return;
+      }
+      ensureRosters();
+      renderContestants();
+      renderTeams();
+      renderDraftStatus();
+    });
 
-document.getElementById('draw').addEventListener('click', drawThree);
-document.getElementById('clearLocks').addEventListener('click', () => {
-  locks.clear();
-  renderList();
-});
-document.getElementById('copy').addEventListener('click', async () => {
-  if (!lastDraw.length) return;
-  try {
-    await navigator.clipboard.writeText(lastDraw.join(', '));
-    alert('Copied: ' + lastDraw.join(', '));
-  } catch(e) {
-    alert('Copy failed. You can manually copy: ' + lastDraw.join(', '));
-  }
-});
+    tradeTeamA.addEventListener("change", () => updateTradeMembers(tradeTeamA, tradeMemberA));
+    tradeTeamB.addEventListener("change", () => updateTradeMembers(tradeTeamB, tradeMemberB));
+    executeTradeBtn.addEventListener("click", executeTrade);
+    clearTradesBtn.addEventListener("click", clearTrades);
 
-// Edit panel
-function syncEditor() {
-  editEl.value = bakers.join("\n");
-}
-document.getElementById('apply').addEventListener('click', () => {
-  const lines = editEl.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  if (lines.length) {
-    bakers = Array.from(new Set(lines));
-    locks.clear();
-    renderList();
-  }
-});
-document.getElementById('reset').addEventListener('click', () => {
-  bakers = [...defaultBakers];
-  locks.clear();
-  syncEditor();
-  renderList();
-});
+    entryFeeInput.addEventListener("input", () => {
+      state.pool.entryFee = Number(entryFeeInput.value) || 0;
+      updatePot();
+    });
 
-renderList();
-syncEditor();
-</script>
+    customPotInput.addEventListener("input", () => {
+      state.pool.manualPot = Number(customPotInput.value) || 0;
+      updatePot();
+    });
+
+    generateLinkBtn.addEventListener("click", generateShareLink);
+    copyLinkBtn.addEventListener("click", copyShareLink);
+
+    populateShows();
+    renderScoring();
+    renderContestants();
+    renderTeams();
+    renderDraftStatus();
+    loadFromUrl();
+  </script>
 </body>
 </html>
